@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
+import 'api/api_method.dart';
 import 'controller/setting_controller.dart';
 import 'routes/app_pages.dart';
 import 'utility/app_theme.dart';
@@ -10,8 +11,21 @@ import 'utility/change_value.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await GetStorage.init();
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  // Startup must never block the first screen: log and carry on.
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    kLog(title: "FLUTTER ERROR", content: "${details.exception}\n${details.stack}");
+  };
+  try {
+    await GetStorage.init();
+  } catch (e) {
+    kLog(title: "STORAGE", content: e);
+  }
+  try {
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  } catch (e) {
+    kLog(title: "ORIENTATION", content: e);
+  }
   runApp(const MyApp());
 }
 
