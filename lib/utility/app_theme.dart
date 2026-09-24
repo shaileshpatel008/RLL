@@ -197,8 +197,8 @@ class AppTheme {
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: p.card,
         surfaceTintColor: Colors.transparent,
-        showDragHandle: true,
-        dragHandleColor: p.line,
+        // Sheets draw their own handle; the theme's would add a second one.
+        showDragHandle: false,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       ),
       dialogTheme: DialogThemeData(

@@ -179,99 +179,106 @@ class _NumberSheet extends GetView<SettingController> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    return Container(
-      decoration: BoxDecoration(
-        color: p.card,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      padding: EdgeInsets.fromLTRB(20, 12, 20, 20 + MediaQuery.viewInsetsOf(context).bottom),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 5,
-                decoration: BoxDecoration(color: p.line, borderRadius: BorderRadius.circular(9)),
-              ),
-            ),
-            const SizedBox(height: 18),
-            Text("Starting number", style: AppTheme.display(size: 22, color: p.ink)),
-            const SizedBox(height: 4),
-            Text(
-              "Use this if you need to skip or continue a number series.",
-              style: TextStyle(color: p.muted, fontSize: 14),
-            ),
-            const SizedBox(height: 18),
-            TextField(
-              controller: controller.numberController,
-              autofocus: true,
-              keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
-              onChanged: (v) {
-                controller.onNumberChanged(v);
-                controller.update();
-              },
-              onSubmitted: (_) => controller.saveNextNumber(),
-              style: AppTheme.mono(size: 28, weight: FontWeight.w800, color: p.ink),
-              decoration: const InputDecoration(hintText: "00000"),
-            ),
-            const SizedBox(height: 10),
-            GetBuilder<SettingController>(
-              builder: (_) => Text.rich(
-                TextSpan(
-                  children: [
+    return Padding(
+      // Lift the sheet above the keyboard.
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: Container(
+        decoration: BoxDecoration(
+          color: p.card,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: SingleChildScrollView(
+          // Scrolls instead of overflowing on small screens.
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(color: p.line, borderRadius: BorderRadius.circular(9)),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text("Starting number", style: AppTheme.display(size: 22, color: p.ink)),
+                const SizedBox(height: 4),
+                Text(
+                  "Use this if you need to skip or continue a number series.",
+                  style: TextStyle(color: p.muted, fontSize: 14),
+                ),
+                const SizedBox(height: 18),
+                TextField(
+                  controller: controller.numberController,
+                  autofocus: true,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
+                  onChanged: (v) {
+                    controller.onNumberChanged(v);
+                    controller.update();
+                  },
+                  onSubmitted: (_) => controller.saveNextNumber(),
+                  style: AppTheme.mono(size: 28, weight: FontWeight.w800, color: p.ink),
+                  decoration: const InputDecoration(hintText: "00000"),
+                ),
+                const SizedBox(height: 10),
+                GetBuilder<SettingController>(
+                  builder: (_) => Text.rich(
                     TextSpan(
-                      text: "Next invoice: ",
-                      style: TextStyle(color: p.muted),
+                      children: [
+                        TextSpan(
+                          text: "Next invoice: ",
+                          style: TextStyle(color: p.muted),
+                        ),
+                        TextSpan(
+                          text: controller.numberPreview,
+                          style: AppTheme.mono(size: 13, weight: FontWeight.w700, color: p.ink),
+                        ),
+                      ],
                     ),
-                    TextSpan(
-                      text: controller.numberPreview,
-                      style: AppTheme.mono(size: 13, weight: FontWeight.w700, color: p.ink),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Obx(
+                  () => AnimatedSize(
+                    duration: const Duration(milliseconds: 200),
+                    child: controller.numberError.value == null
+                        ? const SizedBox(height: 16)
+                        : Padding(
+                            padding: const EdgeInsets.only(top: 12, bottom: 4),
+                            child: _ErrorBanner(controller.numberError.value!),
+                          ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(onPressed: closeRoute, child: const Text("Cancel")),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Obx(
+                        () => FilledButton(
+                          onPressed: controller.isSaving.value ? null : controller.saveNextNumber,
+                          child: controller.isSaving.value
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                                )
+                              : const Text("Save"),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            Obx(
-              () => AnimatedSize(
-                duration: const Duration(milliseconds: 200),
-                child: controller.numberError.value == null
-                    ? const SizedBox(height: 16)
-                    : Padding(
-                        padding: const EdgeInsets.only(top: 12, bottom: 4),
-                        child: _ErrorBanner(controller.numberError.value!),
-                      ),
-              ),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(onPressed: closeRoute, child: const Text("Cancel")),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Obx(
-                    () => FilledButton(
-                      onPressed: controller.isSaving.value ? null : controller.saveNextNumber,
-                      child: controller.isSaving.value
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
-                            )
-                          : const Text("Save"),
-                    ),
-                  ),
-                ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

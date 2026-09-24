@@ -833,193 +833,198 @@ class _TripSheet extends GetView<InvoiceFormController> {
   Widget build(BuildContext context) {
     final p = context.palette;
     final editing = controller.editingIndex != null;
-    return Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * .92),
-      decoration: BoxDecoration(
-        color: p.card,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 10),
-            Container(
-              width: 40,
-              height: 5,
-              decoration: BoxDecoration(color: p.line, borderRadius: BorderRadius.circular(9)),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 8, 4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(editing ? "Edit trip" : "Add trip", style: AppTheme.display(size: 22, color: p.ink)),
-                  ),
-                  IconButton(tooltip: "Close", onPressed: closeRoute, icon: const Icon(Icons.close_rounded)),
-                ],
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+    // Always fits between the status bar and the keyboard; the list scrolls.
+    final maxHeight = (MediaQuery.sizeOf(context).height - keyboard - MediaQuery.paddingOf(context).top) * .95;
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboard),
+      child: Container(
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        decoration: BoxDecoration(
+          color: p.card,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 40,
+                height: 5,
+                decoration: BoxDecoration(color: p.line, borderRadius: BorderRadius.circular(9)),
               ),
-            ),
-            Flexible(
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                children: [
-                  Obx(
-                    () => PickerField(
-                      label: "Trip date",
-                      value: controller.tripDate.value == null ? null : formatDate(controller.tripDate.value),
-                      onTap: () => controller.pickTripDate(context),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 8, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(editing ? "Edit trip" : "Add trip", style: AppTheme.display(size: 22, color: p.ink)),
                     ),
-                  ),
-                  _gap,
-                  TextFormFieldWidget(
-                    label: "Description",
-                    hint: "e.g. Airport transfer – Gatwick",
-                    controller: controller.descController,
-                    capitalization: TextCapitalization.sentences,
-                    onChanged: (_) => controller.tripError.value = null,
-                  ),
-                  _gap,
-                  Text(
-                    "Vehicle",
-                    style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: p.muted),
-                  ),
-                  const SizedBox(height: 6),
-                  Obx(() {
-                    final options = controller.vehicleOptions;
-                    return Row(
-                      children: [
-                        for (var i = 0; i < options.length; i++) ...[
-                          if (i > 0) const SizedBox(width: 8),
-                          Expanded(
-                            child: _VehicleOption(
-                              label: options[i],
-                              icon: switch (options[i].toLowerCase()) {
-                                'minibus' => Icons.airport_shuttle_rounded,
-                                'suv' => Icons.directions_car_filled_rounded,
-                                'sedan' => Icons.local_taxi_rounded,
-                                _ => Icons.commute_rounded,
-                              },
-                              selected: controller.vehicle.value == options[i],
-                              onTap: () => controller.selectVehicle(options[i]),
-                            ),
-                          ),
-                        ],
-                      ],
-                    );
-                  }),
-                  _gap,
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Quantity",
-                              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: p.muted),
-                            ),
-                            const SizedBox(height: 6),
-                            Container(
-                              height: 52,
-                              decoration: BoxDecoration(
-                                color: p.field,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: p.line, width: 1.5),
-                              ),
-                              child: Obx(
-                                () => Row(
-                                  children: [
-                                    IconButton(
-                                      tooltip: "Decrease",
-                                      onPressed: controller.quantity.value > 1 ? controller.decQty : null,
-                                      icon: Icon(Icons.remove_rounded, color: p.accent),
-                                    ),
-                                    Expanded(
-                                      child: AnimatedSwitcher(
-                                        duration: const Duration(milliseconds: 180),
-                                        transitionBuilder: (c, a) => ScaleTransition(scale: a, child: c),
-                                        child: Text(
-                                          "${controller.quantity.value}",
-                                          key: ValueKey(controller.quantity.value),
-                                          textAlign: TextAlign.center,
-                                          style: AppTheme.display(size: 18, color: p.ink),
-                                        ),
-                                      ),
-                                    ),
-                                    IconButton(
-                                      tooltip: "Increase",
-                                      onPressed: controller.incQty,
-                                      icon: Icon(Icons.add_rounded, color: p.accent),
-                                    ),
-                                  ],
-                                ),
+                    IconButton(tooltip: "Close", onPressed: closeRoute, icon: const Icon(Icons.close_rounded)),
+                  ],
+                ),
+              ),
+              Flexible(
+                child: ListView(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                  children: [
+                    Obx(
+                      () => PickerField(
+                        label: "Trip date",
+                        value: controller.tripDate.value == null ? null : formatDate(controller.tripDate.value),
+                        onTap: () => controller.pickTripDate(context),
+                      ),
+                    ),
+                    _gap,
+                    TextFormFieldWidget(
+                      label: "Description",
+                      hint: "e.g. Airport transfer – Gatwick",
+                      controller: controller.descController,
+                      capitalization: TextCapitalization.sentences,
+                      onChanged: (_) => controller.tripError.value = null,
+                    ),
+                    _gap,
+                    Text(
+                      "Vehicle",
+                      style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: p.muted),
+                    ),
+                    const SizedBox(height: 6),
+                    Obx(() {
+                      final options = controller.vehicleOptions;
+                      return Row(
+                        children: [
+                          for (var i = 0; i < options.length; i++) ...[
+                            if (i > 0) const SizedBox(width: 8),
+                            Expanded(
+                              child: _VehicleOption(
+                                label: options[i],
+                                icon: switch (options[i].toLowerCase()) {
+                                  'minibus' => Icons.airport_shuttle_rounded,
+                                  'suv' => Icons.directions_car_filled_rounded,
+                                  'sedan' => Icons.local_taxi_rounded,
+                                  _ => Icons.commute_rounded,
+                                },
+                                selected: controller.vehicle.value == options[i],
+                                onTap: () => controller.selectVehicle(options[i]),
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextFormFieldWidget(
-                          label: "Price",
-                          hint: "0.00",
-                          prefixText: "£ ",
-                          controller: controller.priceController,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          textInputAction: TextInputAction.done,
-                          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d{0,7}(\.\d{0,2})?'))],
-                          onChanged: controller.onPriceChanged,
-                          onSubmitted: (_) => controller.saveTrip(),
-                        ),
-                      ),
-                    ],
-                  ),
-                  _gap,
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    decoration: BoxDecoration(color: p.soft, borderRadius: BorderRadius.circular(14)),
-                    child: Row(
+                        ],
+                      );
+                    }),
+                    _gap,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: Text(
-                            "Amount",
-                            style: TextStyle(fontWeight: FontWeight.w700, color: p.muted),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Quantity",
+                                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: p.muted),
+                              ),
+                              const SizedBox(height: 6),
+                              Container(
+                                height: 52,
+                                decoration: BoxDecoration(
+                                  color: p.field,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: p.line, width: 1.5),
+                                ),
+                                child: Obx(
+                                  () => Row(
+                                    children: [
+                                      IconButton(
+                                        tooltip: "Decrease",
+                                        onPressed: controller.quantity.value > 1 ? controller.decQty : null,
+                                        icon: Icon(Icons.remove_rounded, color: p.accent),
+                                      ),
+                                      Expanded(
+                                        child: AnimatedSwitcher(
+                                          duration: const Duration(milliseconds: 180),
+                                          transitionBuilder: (c, a) => ScaleTransition(scale: a, child: c),
+                                          child: Text(
+                                            "${controller.quantity.value}",
+                                            key: ValueKey(controller.quantity.value),
+                                            textAlign: TextAlign.center,
+                                            style: AppTheme.display(size: 18, color: p.ink),
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        tooltip: "Increase",
+                                        onPressed: controller.incQty,
+                                        icon: Icon(Icons.add_rounded, color: p.accent),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Obx(
-                          () => TweenAnimationBuilder<double>(
-                            tween: Tween(end: controller.tripAmount),
-                            duration: const Duration(milliseconds: 300),
-                            builder: (_, v, _) =>
-                                Text(formatMoney(v), style: AppTheme.display(size: 22, color: p.accent)),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormFieldWidget(
+                            label: "Price",
+                            hint: "0.00",
+                            prefixText: "£ ",
+                            controller: controller.priceController,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            textInputAction: TextInputAction.done,
+                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d{0,7}(\.\d{0,2})?'))],
+                            onChanged: controller.onPriceChanged,
+                            onSubmitted: (_) => controller.saveTrip(),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  Obx(() => InlineError(message: controller.tripError.value)),
-                  FilledButton(
-                    onPressed: controller.saveTrip,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.check_rounded, size: 20),
-                        const SizedBox(width: 8),
-                        Text(editing ? "Update trip" : "Add to invoice"),
-                      ],
+                    _gap,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(color: p.soft, borderRadius: BorderRadius.circular(14)),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              "Amount",
+                              style: TextStyle(fontWeight: FontWeight.w700, color: p.muted),
+                            ),
+                          ),
+                          Obx(
+                            () => TweenAnimationBuilder<double>(
+                              tween: Tween(end: controller.tripAmount),
+                              duration: const Duration(milliseconds: 300),
+                              builder: (_, v, _) =>
+                                  Text(formatMoney(v), style: AppTheme.display(size: 22, color: p.accent)),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 14),
+                    Obx(() => InlineError(message: controller.tripError.value)),
+                    FilledButton(
+                      onPressed: controller.saveTrip,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.check_rounded, size: 20),
+                          const SizedBox(width: 8),
+                          Text(editing ? "Update trip" : "Add to invoice"),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
