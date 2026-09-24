@@ -57,6 +57,9 @@ class MainScreen extends GetView<MainController> {
 class _BottomNav extends GetView<MainController> {
   const _BottomNav();
 
+  static const _barPadding = 8.0;
+  static const _fabSize = 60.0;
+
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
@@ -64,77 +67,99 @@ class _BottomNav extends GetView<MainController> {
       minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       child: SizedBox(
         height: 92,
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              height: 68,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              decoration: BoxDecoration(
-                color: p.card,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: p.line),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF221450).withValues(alpha: .18),
-                    blurRadius: 40,
-                    offset: const Offset(0, 18),
-                  ),
-                ],
-              ),
-              child: Obx(() {
-                final i = controller.tabIndex.value;
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _NavItem(
-                      icon: Icons.home_rounded,
-                      label: "Home",
-                      active: i == 0,
-                      onTap: () => controller.changeTab(0),
-                    ),
-                    _NavItem(
-                      icon: Icons.receipt_long_rounded,
-                      label: "Invoices",
-                      active: i == 1,
-                      onTap: () => controller.changeTab(1),
-                    ),
-                    const SizedBox(width: 64),
-                    _NavItem(
-                      icon: Icons.settings_rounded,
-                      label: "Settings",
-                      active: i == 2,
-                      onTap: () => controller.changeTab(2),
-                    ),
-                  ],
-                );
-              }),
-            ),
-            Positioned(
-              top: 0,
-              child: Tooltip(
-                message: "New invoice",
-                child: Pressable(
-                  onTap: controller.newInvoice,
-                  scale: .9,
+        // Four equal slots: Home · Invoices · (+) · Settings. The + button is
+        // placed over the third slot so it never covers a tab.
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final slot = (constraints.maxWidth - _barPadding * 2) / 4;
+            final fabLeft = _barPadding + slot * 2 + (slot - _fabSize) / 2;
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: 68,
                   child: Container(
-                    width: 60,
-                    height: 60,
+                    padding: const EdgeInsets.symmetric(horizontal: _barPadding),
                     decoration: BoxDecoration(
-                      color: p.accent,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: p.bg, width: 4),
+                      color: p.card,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: p.line),
                       boxShadow: [
-                        BoxShadow(color: p.accent.withValues(alpha: .55), blurRadius: 24, offset: const Offset(0, 12)),
+                        BoxShadow(
+                          color: const Color(0xFF221450).withValues(alpha: .18),
+                          blurRadius: 40,
+                          offset: const Offset(0, 18),
+                        ),
                       ],
                     ),
-                    child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+                    child: Obx(() {
+                      final i = controller.tabIndex.value;
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: _NavItem(
+                              icon: Icons.home_rounded,
+                              label: "Home",
+                              active: i == 0,
+                              onTap: () => controller.changeTab(0),
+                            ),
+                          ),
+                          Expanded(
+                            child: _NavItem(
+                              icon: Icons.receipt_long_rounded,
+                              label: "Invoices",
+                              active: i == 1,
+                              onTap: () => controller.changeTab(1),
+                            ),
+                          ),
+                          const Spacer(), // + button slot
+                          Expanded(
+                            child: _NavItem(
+                              icon: Icons.settings_rounded,
+                              label: "Settings",
+                              active: i == 2,
+                              onTap: () => controller.changeTab(2),
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
                   ),
                 ),
-              ),
-            ),
-          ],
+                Positioned(
+                  top: 0,
+                  left: fabLeft,
+                  child: Tooltip(
+                    message: "New invoice",
+                    child: Pressable(
+                      onTap: controller.newInvoice,
+                      scale: .9,
+                      child: Container(
+                        width: _fabSize,
+                        height: _fabSize,
+                        decoration: BoxDecoration(
+                          color: p.accent,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: p.bg, width: 4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: p.accent.withValues(alpha: .55),
+                              blurRadius: 24,
+                              offset: const Offset(0, 12),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -160,7 +185,6 @@ class _NavItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: SizedBox(
-          width: 72,
           height: 60,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

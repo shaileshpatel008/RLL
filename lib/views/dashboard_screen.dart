@@ -340,23 +340,21 @@ class _QuickAction extends StatelessWidget {
               bg: primary ? Colors.white.withValues(alpha: .18) : tone!.$1,
               fg: primary ? Colors.white : tone!.$2,
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: fg, fontWeight: FontWeight.w800, fontSize: 14),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: primary ? Colors.white70 : p.muted, fontSize: 11.5),
-                ),
-              ],
+            // Shrinks the text a little on narrow phones instead of cutting it off.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(color: fg, fontWeight: FontWeight.w800, fontSize: 14),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: TextStyle(color: primary ? Colors.white70 : p.muted, fontSize: 11.5)),
+                ],
+              ),
             ),
           ],
         ),
